@@ -39,20 +39,29 @@ class Create(QWidget):
         self.down_panel()
 
     def next_task(self):
+        can_continue = True
         if self.combo_box_of_type.currentIndex() == 0:
-            self.tasks[f'{len(self.tasks) + 1}'] = {
-                'type': 0,
-                'question': self.question.toPlainText(),
-                'answers': [i[1].text() for i in self.answer_list],
-                'correct_answers': [i for i in range(0, len(self.answer_list)) if self.answer_list[i][0].isChecked()]
-            }
+            correct_answers = [i for i in range(0, len(self.answer_list)) if self.answer_list[i][0].isChecked()]
+            if correct_answers != []:
+                self.tasks[f'{len(self.tasks) + 1}'] = {
+                    'type': 0,
+                    'question': self.question.toPlainText(),
+                    'answers': [i[1].text() for i in self.answer_list],
+                    'correct_answers': correct_answers
+                }
+            else:
+                can_continue = False
         elif self.combo_box_of_type.currentIndex() == 1:
-            self.tasks[f'{len(self.tasks) + 1}'] = {
-                'type': 1,
-                'question': self.question.toPlainText(),
-                'answers': [i[1].text() for i in self.answer_list],
-                'correct_answers': [i for i in range(0, len(self.answer_list)) if self.answer_list[i][0].isChecked()]
-            }
+            correct_answers = [i for i in range(0, len(self.answer_list)) if self.answer_list[i][0].isChecked()]
+            if correct_answers != []:
+                self.tasks[f'{len(self.tasks) + 1}'] = {
+                    'type': 1,
+                    'question': self.question.toPlainText(),
+                    'answers': [i[1].text() for i in self.answer_list],
+                    'correct_answers': correct_answers
+                }
+            else:
+                can_continue = False
         else:
             self.tasks[f'{len(self.tasks) + 1}'] = {
                 'type': 2,
@@ -60,7 +69,14 @@ class Create(QWidget):
                 'answers': [i[1].text() for i in self.answer_list],
                 'correct_answers': [i[0].currentIndex() for i in self.answer_list]
             }
-        self.evt_changer()
+        if can_continue:
+            self.evt_changer()
+        else:
+            message_box = QMessageBox()
+            message_box.setIcon(QMessageBox.Icon.Information)
+            message_box.setText('Choose any answer!')
+            message_box.exec()
+
 
     def finish_tasks(self):
         for i in range(self.grid.count()):
@@ -240,6 +256,7 @@ class Pass(QWidget):
                     if self.answers[i].isChecked():
                         self.all_answers.append((self.current_task, [i], 0))
 
+
         elif self.tasks[f'{self.current_task}']['type'] == 1:
             answers = []
             for i in self.tasks[f'{self.current_task}']['correct_answers']:
@@ -268,12 +285,22 @@ class Pass(QWidget):
                     answers.append(i.currentIndex())
                 self.all_answers.append((self.current_task, answers, 0))
 
+
+
+        if self.all_answers != []:
+            if self.all_answers[-1][0] != self.current_task:
+                self.all_answers.append((self.current_task, [], 0))
+        else:
+            self.all_answers.append((self.current_task, [], 0))
+
         self.current_task += 1
 
         if self.current_task > len(self.tasks_numbers):
             self.show_result()
         else:
             self.show_task()
+
+
 
     def show_task(self):
         self.number_of_task = QLabel()
@@ -288,7 +315,7 @@ class Pass(QWidget):
         self.answer_x = 0
         self.answers = []
 
-        self.grid.addWidget(QLabel(f'{self.current_task}/{len(self.tasks_numbers)}'), 0, 0)
+        self.grid.addWidget(QLabel(f'{self.current_task} of {len(self.tasks_numbers)}'), 0, 0)
         self.grid.addWidget(QLabel(f'{self.tasks[f"{self.current_task}"]["question"]}'), 1, 0)
 
         if self.tasks[f'{self.current_task}']['type'] == 0 or self.tasks[f'{self.current_task}']['type'] == 1:
@@ -336,7 +363,7 @@ class Pass(QWidget):
             if i[2] == 1:
                 correct_answers += 1
         self.setWindowTitle(
-            f'{correct_answers}/{len(self.all_answers)}  {(correct_answers / len(self.all_answers) * 100):.2f}%')
+            f'{correct_answers} of {len(self.all_answers)}  {(correct_answers / len(self.all_answers) * 100):.2f}%')
 
         y = 0
         x = 0
