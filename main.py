@@ -256,10 +256,9 @@ class Pass(QWidget):
                     if self.answers[i].isChecked():
                         self.all_answers.append((self.current_task, [i], 0))
 
-
         elif self.tasks[f'{self.current_task}']['type'] == 1:
             answers = []
-            for i in self.tasks[f'{self.current_task}']['correct_answers']:
+            for i in range(len(self.tasks[f'{self.current_task}']['answers'])):
                 if self.answers[i].isChecked():
                     answers.append(i)
             if answers == self.tasks[f'{self.current_task}']['correct_answers']:
